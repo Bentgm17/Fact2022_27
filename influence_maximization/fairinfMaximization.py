@@ -28,7 +28,7 @@ class fairInfMaximization(infMaxConfig):
     def __init__(self, num=-1, args=None):
         super(fairInfMaximization, self).__init__(args)
 
-        if self.rice or self.rice_subset or self.sample_1000 or self.sample_4000_connected_subset or self.synthetic or self.synthetic_3g or self.synthetic_3layers:
+        if self.rice or self.rice_subset or self.sample_1000 or self.sample_4000_connected_subset or self.synthetic or self.synthetic_3g or self.synthetic1 or self.twitter or self.synthetic_extention:
             self.G = ut.get_data(self.filename, self.weight)
 
             '''
@@ -72,7 +72,7 @@ class fairInfMaximization(infMaxConfig):
             masldkjfkj
             '''
 
-        if self.twitter:
+        elif self.twitter:
             self.G = ut.get_twitter_data(self.filename, self.weight)
 
         # self.stats = ut.graph_stats(self.G)
@@ -85,6 +85,8 @@ class fairInfMaximization(infMaxConfig):
         print(res_filename)
 
         # stats = ut.graph_stats(self.G, print_stats=False)
+        # print(self.G.nodes())
+        # print(len(self.G.nodes()))
         v, em = ut.load_embeddings(emb_filename, self.G.nodes())
 
         influenced, influenced_grouped = [], []
@@ -93,7 +95,6 @@ class fairInfMaximization(infMaxConfig):
         # for k in range(1, budget + 1):
         print('--------', k)
         S = ut.get_kmedoids_centers(em, k, v)
-
         I, I_grouped = map_fair_IC((self.G, S))
         influenced.append(I)
         influenced_grouped.append(I_grouped)
@@ -506,16 +507,130 @@ if __name__ == '__main__':
         # method = 'unweighted'
         # fair_inf.test_kmedoids(embfilename + method + '_' + d, resfilename + '_emb_' + method + '_' + d, budget=40)
 
+    ##### run crosswalk, deepwalk, fairwalk for 2-grouped synthetic data
+    '''
+    in infMaxConfig __init__ set self.syntactic to True and then run the following in the command line:
+    python fairinfMaximization.py --nodes 500 --Pred 0.7 --Phom 0.025 --Phet 0.001 --Pact 0.03
+    '''
+    if False:
+        fair_inf = fairInfMaximization(args=args)
+        
+        d = 'd32'
+        
+        
+        for method in ['crosswalk','deepwalk','fairwalk']:
+            print('-----'+method)
+            embfilename = []
+            resfilename = []
+            for i in ['1','2','3','4','5']:
+                embfilename.append('data/Embeddings/results_s2/'+method+'/synthetic_out_'+i)
+                resfilename.append('data/results_IM/synthetic2/'+method+'/'+i)
+            for i,embfile in enumerate(embfilename):
+                resfile = resfilename[i]
+                fair_inf.test_kmedoids(embfile, resfile, budget=5)
+
+        #fair_inf.test_greedy(resfilename, budget=40)
+
+    ##### run crosswalk, deepwalk, fairwalk for 3-grouped synthetic data
+    '''
+    in infMaxConfig __init__ set self.synthetic_3g to True and then run the following in the command line:
+    python fairinfMaximization.py --nodes 500 --Pred 0.6 --Pblue 0.25 --Prr 0.025 --Pbb 0.025 --Pgg 0.025 --Prb 0.001 --Prg 0.0005 --Pbg 0.0005 --Pact 0.03
+    '''
+    if False:
+        fair_inf = fairInfMaximization(args=args)
+        
+        d = 'd32'
+        
+        for method in ['crosswalk','deepwalk','fairwalk']:
+            print('-----'+method)
+            embfilename = []
+            resfilename = []
+            for i in ['1','2','3','4','5']:
+                embfilename.append('data/Embeddings/results_s3/'+method+'/synthetic_out_'+i)
+                resfilename.append('data/results_IM/synthetic3/'+method+'/'+i)
+            for i,embfile in enumerate(embfilename):
+                resfile = resfilename[i]
+                fair_inf.test_kmedoids(embfile, resfile, budget=5)
+
+        #fair_inf.test_greedy(resfilename, budget=40)
+
+        ##### run crosswalk, deepwalk, fairwalk for 5-grouped synthetic data
+    '''
+    in infMaxConfig __init__ set self.synthetic_extention to True and then run the following in the command line:
+    python fairinfMaximization.py
+    '''
     if True:
         fair_inf = fairInfMaximization(args=args)
         
         d = 'd32'
         
-        # for i in ['1','2','3','4','5']:
-        embfilename = 'data/rice.embeddings_wconstant50_128_range_5'
-        resfilename = 'data/results_k40_new_2'
-        # print(i, ' ----')
-        fair_inf.test_kmedoids(embfilename, resfilename, budget=5)
+        for method in ['crosswalk','deepwalk','fairwalk']:
+            print('-----'+method)
+            embfilename = []
+            resfilename = []
+            for i in ['1']:#['1','2','3','4','5']:
+                #embfilename.append('data/Embeddings/synth5/'+method+'/synthetic_out_'+i)
+                embfilename.append('data/Embeddings/synth5/'+method+'/synth200_Phom0.01-0.05_Phet0.001-0.005_'+method+'.embeddings')
+                resfilename.append('data/results_IM/synthetic5/'+method+'/'+i)
+            for i,embfile in enumerate(embfilename):
+                resfile = resfilename[i]
+                fair_inf.test_kmedoids(embfile, resfile, budget=5)
+
+    # if True:
+    #     fair_inf = fairInfMaximization(args=args)
+        
+    #     d = 'd32'
+    #     resfilename = 'data/results_IM/rice/greedy_test'
+    #     fair_inf.test_greedy(resfilename, budget=40)
+        
+    ##### run crosswalk, deepwalk, fairwalk for rice facebook data
+    '''
+    in infMaxConfig __init__ set self.rice_subset to True and then run the following in the command line:
+    python fairinfMaximization.py
+    '''
+    if False:
+        fair_inf = fairInfMaximization(args=args)
+        
+        d = 'd32'
+        
+        for method in ['crosswalk_exp=4','deepwalk','fairwalk']:
+            print('-----'+method)
+            embfilename = []
+            resfilename = []
+            for i in ['1','2','3','4','5']:
+                if method == 'crosswalk_exp=4':
+                    embfilename.append('data/Embeddings/RiceEmbeddings/'+method+'/rice.embeddings_crosswalk_'+i)
+                else:
+                    embfilename.append('data/Embeddings/RiceEmbeddings/'+method+'/rice.embeddings_'+method+'_'+i)
+                resfilename.append('data/results_IM/rice/'+method+'/'+i)
+            for i,embfile in enumerate(embfilename):
+                resfile = resfilename[i]
+                fair_inf.test_kmedoids(embfile, resfile, budget=5)
+
+        #fair_inf.test_greedy(resfilename, budget=40)
+
+    ##### run crosswalk, deepwalk, fairwalk for twitter data
+    '''
+    in infMaxConfig __init__ set self.twitter to True and then run the following in the command line:
+    python fairinfMaximization.py
+    '''
+    if False:
+        fair_inf = fairInfMaximization(args=args)
+        
+        d = 'd32'
+        
+        for method in ['crosswalk','deepwalk','fairwalk']:
+            print('-----'+method)
+            embfilename = []
+            resfilename = []
+            for i in ['1','2','3','4','5']:
+                embfilename.append('data/Embeddings/TwitterEmbeddings/'+method+'/twitter.embeddings_'+method+'_'+i)
+                resfilename.append('data/results_IM/twitter/'+method+'/'+i)
+            for i,embfile in enumerate(embfilename):
+                resfile = resfilename[i]
+                fair_inf.test_kmedoids(embfile, resfile, budget=5)
+
+        #fair_inf.test_greedy(resfilename, budget=40)
 
     if False:
         fair_inf = fairInfMaximization(args=args)
